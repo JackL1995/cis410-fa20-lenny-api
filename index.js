@@ -30,8 +30,8 @@ app.post("/customer", async (req,res)=>{
         return res.status(400).send("bad request")
     }
 
-    nameFirst = nameFirst.replace("'","''")
-    nameLast = nameLast.replace("'","''")
+    firstName = firstName.replace("'","''")
+    lastName = lastName.replace("'","''")
 
     var emailCheckQuery = `SELECT email
     FROM customer
