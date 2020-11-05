@@ -1,8 +1,11 @@
-const express = require('express');
+const express = require('express'); // Import others' node modules first
+const bcrypt = require('bcryptjs')
 
 const db = require('./dbConnectExec.js');
 
 const app = express();
+
+app.use(express.json())
 
 app.get("/hi",(req, res)=>{ // first provided with path, then function
     res.send("hello world")
@@ -11,6 +14,55 @@ app.get("/hi",(req, res)=>{ // first provided with path, then function
 // app.host()
 // app.put()
 // app.delete()
+
+app.post("/customer", async (req,res)=>{
+    // res.send("creating user")
+    // console.log("request body", req.body)
+
+    
+    var firstName = req.body.firstName;
+    var lastName = req.body.lastName;
+    var email = req.body.email;
+    var password = req.body.password;
+    var phone = req.body.phone;
+
+    if(!firstName || !lastName || !email || !password){ // Or operator
+        return res.status(400).send("bad request")
+    }
+
+    nameFirst = nameFirst.replace("'","''")
+    nameLast = nameLast.replace("'","''")
+
+    var emailCheckQuery = `SELECT email
+    FROM customer
+    WHERE email= '${email}'`
+
+    var existingUser = await db.executeQuery(emailCheckQuery)
+
+    console.log("existing user", existingUser)
+
+    if(existingUser[0]){
+        return res.status(409).send('Please enter a different email.')
+    }
+
+    // var insertQuery = `INSERT INTO Customer(FirstName, LastName, email, password, phone)
+    // VALUES('Lorenzo', 'Munoz', 'lm@mail.com', 'asdfasdf', 2259001)`
+
+    var hashedPswd = bcrypt.hashSync(password)
+    var insertQuery = `INSERT INTO Customer(FirstName, LastName, email, password, phone)
+    VALUES('${firstName}', '${lastName}', '${email}', '${hashedPswd}', ${phone})`
+
+    db.executeQuery(insertQuery)
+    .then(()=>{
+        res.status(201).send()
+    })
+    .catch((err)=>{
+        console.log("error in POST /Customer", err)
+        res.status(500).send()
+    })
+})
+
+
 
 app.get("/vehicle", (req,res)=>{
     //get data from database
