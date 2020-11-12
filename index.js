@@ -4,9 +4,14 @@ const jwt = require('jsonwebtoken')
 
 const db = require('./dbConnectExec.js');
 const config = require('./config.js')
+const auth = require('./middleware/authenticate')
 
 const app = express();
 app.use(express.json())
+
+app.get('/customer/me', auth, (req,res)=>{
+    res.send(req.customer)
+})
 
 app.get("/hi",(req, res)=>{ // first provided with path, then function
     res.send("hello world")
@@ -15,6 +20,42 @@ app.get("/hi",(req, res)=>{ // first provided with path, then function
 // app.host()
 // app.put()
 // app.delete()
+
+app.post("/WorkOrder", auth, async (req, res)=>{ //Can insert auth middleware in routes
+
+    try{
+    var BeginDate = req.body.BeginDate;
+    var ReturnDatePromised = req.body.ReturnDatePromised;
+    var AdvisorID = req.body.AdvisorID;
+    var ServiceRequested = req.body.ServiceRequested;
+    var EstimatedCost = req.body.EstimatedCost;
+    var CustomerID = req.body.CustomerID;
+    var VehicleVIN = req.body.VehicleVIN;
+
+    if(!BeginDate || !AdvisorID || !ServiceRequested || !CustomerID){   //Server side validation. Good to also do validation on client side
+        res.status(400).send("bad request: information missing")
+    }
+    //var formattedDate = Date.parse(BeginDate)
+    ServiceRequested = ServiceRequested.replace("'","''")
+
+    let insertQuery = `INSERT INTO WorkOrder(BeginDate, ReturnDatePromised, AdvisorID, ServiceRequested, EstimatedCost, CustomerID, VehicleVIN)
+    OUTPUT inserted.InvoiceID, inserted.BeginDate, inserted.AdvisorID, inserted.ServiceRequested, inserted.CustomerID
+    VALUES ('${BeginDate}', '${ReturnDatePromised}', ${AdvisorID}, '${ServiceRequested}', '${EstimatedCost}', ${req.customer.CustomerID},${VehicleVIN})`
+
+    console.log(insertQuery);                                                                   //Comment me out? 
+
+    let insertedReview = await db.executeQuery(insertQuery)
+
+    //console.log(insertedReview)
+    res.status(201).send(insertedReview[0])
+
+    //console.log("In /WorkOrder ... ", req.customer)
+    //res.send("Here is the response")
+} catch(theNewFeature){
+    console.log("Error in POST /WorkOrder", theNewFeature);
+    res.status(500).send()
+}
+})
 
 app.post("/customer/login", async (req,res)=>{
     //console.log("/login called")
