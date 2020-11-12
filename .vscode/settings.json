@@ -2,5 +2,7 @@
     "appService.zipIgnorePattern": [
         "node_modules{,/**}",
         ".vscode{,/**}"
-    ]
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/78e85545-f12c-4cfc-a340-eeb819a62622/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/cis410-fa20-jlenny-api",
+    "appService.deploySubpath": "."
 }

@@ -12,6 +12,54 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+                // app.patch('/WorkOrder/:pk', auth, async(req,res)=>{
+                //     let InvoiceID = req.customer.customerID;
+                //     // Make sure that the user can only edit their own reviews
+                // })
+
+                // app.delete('/WorkOrder/:pk', auth, async(req,res)=>{
+                //     let InvoiceID = req.customer.customerID;
+                //     // Make sure that the user can only edit their own reviews
+                // })
+
+app.get("/", (req,res)=>{
+    res.send("Here is the root directory.")
+})
+
+app.post('/customer/logout', auth, (req,res)=>{
+    var logoutQuery = `UPDATE Customer
+    SET Token = NULL
+    WHERE CustomerID = ${req.customer.CustomerID}`
+
+    db.executeQuery(logoutQuery)
+    .then(()=>{res.status(200).send()})
+    .catch((error)=>{console.log("Error in POST /customer/logout", error)
+    res.status(500).send()
+})
+})
+
+app.get('/WorkOrder/me', auth, async(req,res)=>{ 
+    let customerID = req.customer.CustomerID;
+
+    //Run db query to select all work orders for given customer
+    try {
+    
+    let allWorkOrders = `SELECT * FROM WorkOrder
+    WHERE CustomerID = ${req.customer.CustomerID}`
+
+    console.log(allWorkOrders);
+
+    let insertedQuery = await db.executeQuery(allWorkOrders)
+
+    res.status(201).send(insertedQuery)
+
+} catch(theNewFeature){
+    console.log("Error in GET /WorkOrder/me", theNewFeature);
+    res.status(500).send()
+}
+
+})
+
 app.get('/customer/me', auth, (req,res)=>{
     res.send(req.customer)
 })
@@ -20,9 +68,9 @@ app.get("/hi",(req, res)=>{ // first provided with path, then function
     res.send("hello world")
 }) // route, request, response
 
-// app.host()
-// app.put()
-// app.delete()
+                // app.host()
+                // app.put()
+                // app.delete()
 
 app.post("/WorkOrder", auth, async (req, res)=>{ //Can insert auth middleware in routes
 
@@ -75,8 +123,6 @@ app.post("/customer/login", async (req,res)=>{
     FROM Customer
     WHERE Email = '${email}'`
 
-    //var result = await db.executeQuery(query);
-
     let result;
 
     try{
@@ -93,7 +139,6 @@ app.post("/customer/login", async (req,res)=>{
     }
 
     //2. Check that password matches
-
     let user = result[0]
     //console.log(user)
 
@@ -103,7 +148,6 @@ app.post("/customer/login", async (req,res)=>{
     }
 
     //3. Generate a token
-    
     let token = jwt.sign({pk: user.CustomerID}, config.JWT, {expiresIn: '60 minutes'})
 
     //console.log(token);
@@ -131,7 +175,6 @@ app.post("/customer/login", async (req,res)=>{
         res.status(500).send();
     }
 })
-
 
 app.post("/customer", async (req,res)=>{
     // res.send("creating user")
