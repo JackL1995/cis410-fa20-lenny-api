@@ -76,22 +76,19 @@ app.post("/WorkOrder", auth, async (req, res)=>{ //Can insert auth middleware in
 
     try{
     var BeginDate = req.body.BeginDate;
-    var ReturnDatePromised = req.body.ReturnDatePromised;
     var AdvisorID = req.body.AdvisorID;
     var ServiceRequested = req.body.ServiceRequested;
-    var EstimatedCost = req.body.EstimatedCost;
-    var CustomerID = req.body.CustomerID;
     var VehicleVIN = req.body.VehicleVIN;
 
-    if(!BeginDate || !AdvisorID || !ServiceRequested || !CustomerID){   //Server side validation. Good to also do validation on client side
+    if(!BeginDate || !AdvisorID || !ServiceRequested) {   //Server side validation. Good to also do validation on client side
         res.status(400).send("bad request: information missing")
     }
     //var formattedDate = Date.parse(BeginDate)
     ServiceRequested = ServiceRequested.replace("'","''")
 
-    let insertQuery = `INSERT INTO WorkOrder(BeginDate, ReturnDatePromised, AdvisorID, ServiceRequested, EstimatedCost, CustomerID, VehicleVIN)
+    let insertQuery = `INSERT INTO WorkOrder(BeginDate, AdvisorID, ServiceRequested, CustomerID, VehicleVIN)
     OUTPUT inserted.InvoiceID, inserted.BeginDate, inserted.AdvisorID, inserted.ServiceRequested, inserted.CustomerID
-    VALUES ('${BeginDate}', '${ReturnDatePromised}', ${AdvisorID}, '${ServiceRequested}', '${EstimatedCost}', ${req.customer.CustomerID},${VehicleVIN})`
+    VALUES ('${BeginDate}', ${AdvisorID}, '${ServiceRequested}', ${req.customer.CustomerID},${VehicleVIN})`
 
     console.log(insertQuery);                                                                   //Comment me out? 
 
